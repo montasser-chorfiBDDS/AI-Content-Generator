@@ -30,13 +30,13 @@ class ChatHFClient:
         text = text.strip().strip('"').strip("'")
         return text
 
-    def generate(self, messages: list[dict]) -> str:
+    def generate(self, messages: list[dict], max_tokens: int | None = None) -> str:
         prompt = self.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
         result = self.pipe(
             prompt,
-            max_new_tokens=self.max_tokens,
+            max_new_tokens=max_tokens or self.max_tokens,
             temperature=self.temperature,
             do_sample=True,
             pad_token_id=self.tokenizer.eos_token_id,
