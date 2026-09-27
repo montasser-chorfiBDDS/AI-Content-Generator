@@ -91,7 +91,11 @@ def render_tab(endpoint: str):
     topic = st.text_input(cfg["topic_label"], placeholder=cfg["topic_ph"], key=f"{endpoint}_topic")
     tone = st.selectbox("Tone", cfg["tones"], key=f"{endpoint}_tone")
     lang = st.selectbox("Language", ["English", "Arabic", "French", "Spanish"], key=f"{endpoint}_lang")
-    extra = st.text_area("Additional context (optional)", key=f"{endpoint}_extra")
+    extra = st.text_area(
+        "📌 Real facts — business name, places, prices, phone (prevents AI inventions)",
+        placeholder="Ex: Agence Palmera Travel, Lieux: Carthage, Sidi Bou Said. Tel +216 53 244 178",
+        key=f"{endpoint}_extra",
+    )
     if st.button(cfg["btn"], key=f"{endpoint}_btn"):
         if topic:
             content, err = generate_content(endpoint, topic, tone, lang, extra)
