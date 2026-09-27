@@ -61,12 +61,31 @@ TASK_VERBS = {
     "blog": "Write a blog post intro and title about",
 }
 
+# Small models drift to English unless ordered otherwise IN the target language.
+LANG_DIRECTIVES = {
+    "french": "RÈGLE ABSOLUE : réponds UNIQUEMENT en français. Toute ta réponse doit être en français, sans aucun mot anglais. Commence directement en français.",
+    "arabic": "قاعدة صارمة: أجب باللغة العربية فقط. كامل ردك يجب أن يكون بالعربية بدون أي كلمة إنجليزية. ابدأ مباشرة بالعربية.",
+    "spanish": "REGLA ABSOLUTA: responde ÚNICAMENTE en español. Toda tu respuesta debe estar en español, sin ninguna palabra en inglés. Empieza directamente en español.",
+}
+
 
 def _do_generate(content_type: str, data: ContentRequest) -> dict:
     cfg = TYPE_CONFIG[content_type]
+    lang_key = (data.language or "").strip().lower()
+    directive = LANG_DIRECTIVES.get(lang_key, "")
+    parts = [
+        f"{TASK_VERBS[content_type]}: {data.topic}",
+        f"Tone: {data.tone}",
+        f"Language: {data.language}",
+    ]
+    if data.extra_info:
+        parts.append(f"Additional context: {data.extra_info}")
+    if directive:
+        parts.append(directive)
+    user_content = "\n".join(parts)
     messages = [
         {"role": "system", "content": cfg["system"]},
-        {"role": "user", "content": f"{TASK_VERBS[content_type]}: {data.topic}\nTone: {data.tone}\nLanguage: {data.language}\n{f'Additional context: {data.extra_info}' if data.extra_info else ''}"}
+        {"role": "user", "content": user_content},
     ]
     response = llm.generate(messages, max_tokens=cfg["max_tokens"])
     response = _postprocess(content_type, response)
